@@ -1,0 +1,111 @@
+{#
+  Example table partial with HTMX-driven actions.
+
+  Reference for:
+  - Each row has stable id (#order-{{ public_id }}) for hx-target
+  - Action buttons swap the row in place (outerHTML)
+  - Delete uses hx-confirm; row fades out on swap
+  - Infinite scroll: last "loading" row triggers next page
+  - Empty state
+  - Semantic <table> with <caption>, <thead> scope="col"
+
+  Usage:
+    Returned as the full list for an HTMX search/filter.
+    Individual order_row.html partials are returned for actions.
+#}
+
+<div id="order-list-region" aria-live="polite" aria-atomic="false">
+
+  {% if not page.object_list %}
+    <p class="py-12 text-center text-gray-500">
+      No orders yet.
+      <a href="{% url 'orders:create' %}" class="text-primary-600 underline">
+        Create your first one
+      </a>.
+    </p>
+  {% else %}
+
+  <table class="min-w-full divide-y divide-gray-200">
+    <caption class="sr-only">Your orders, sorted by most recent.</caption>
+    <thead class="bg-gray-50">
+      <tr>
+        <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-gray-700">Title</th>
+        <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+        <th scope="col" class="px-4 py-2 text-right text-sm font-medium text-gray-700">Total</th>
+        <th scope="col" class="px-4 py-2 text-right text-sm font-medium text-gray-700">
+          <span class="sr-only">Actions</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100 bg-white">
+      {% for order in page.object_list %}
+        {% include "orders/partials/order_row.html" with order=order %}
+      {% endfor %}
+
+      {# Infinite scroll trigger — only if there's another page #}
+      {% if page.has_next %}
+      <tr
+        id="load-more"
+        hx-get="{% url 'orders:list' %}?page={{ page.next_page_number }}"
+        hx-trigger="revealed"
+        hx-swap="outerHTML"
+        hx-target="this"
+      >
+        <td colspan="4" class="px-4 py-3 text-center text-sm text-gray-500">
+          Loading more…
+        </td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  {% endif %}
+
+</div>
+
+{# ─── individual row (kept inline here for reference, normally a separate file) ── #}
+{% comment %}
+templates/orders/partials/order_row.html:
+
+<tr id="order-{{ order.public_id }}" class="hover:bg-gray-50 transition-opacity htmx-swapping:opacity-0">
+  <td class="px-4 py-2 text-sm">
+    <a href="{% url 'orders:detail' order.public_id %}"
+       hx-get="{% url 'orders:detail' order.public_id %}"
+       hx-target="#main"
+       hx-push-url="true"
+       class="text-primary-600 hover:underline">
+      {{ order.title }}
+    </a>
+  </td>
+  <td class="px-4 py-2 text-sm">
+    <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium
+                 {% if order.status == 'completed' %}bg-green-100 text-green-800
+                 {% elif order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                 {% else %}bg-gray-100 text-gray-800{% endif %}">
+      {{ order.get_status_display }}
+    </span>
+  </td>
+  <td class="px-4 py-2 text-right text-sm tabular-nums">{{ order.total }}</td>
+  <td class="px-4 py-2 text-right">
+    <button
+      hx-post="{% url 'orders:complete' order.public_id %}"
+      hx-target="#order-{{ order.public_id }}"
+      hx-swap="outerHTML"
+      class="btn-secondary btn-sm"
+      {% if order.status != 'pending' %}disabled{% endif %}
+    >
+      Complete
+    </button>
+    <button
+      hx-delete="{% url 'orders:delete' order.public_id %}"
+      hx-target="#order-{{ order.public_id }}"
+      hx-swap="outerHTML swap:200ms"
+      hx-confirm="Delete order '{{ order.title }}'? This cannot be undone."
+      class="btn-danger btn-sm"
+      aria-label="Delete order {{ order.title }}"
+    >
+      Delete
+    </button>
+  </td>
+</tr>
+{% endcomment %}

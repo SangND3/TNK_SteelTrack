@@ -1,0 +1,124 @@
+{
+  "_comment": "Canonical error response shapes for JSON APIs. See ai/rules/API_CONVENTION.md. Every error has the same top-level structure: { error: { code, message, ... } }. The 'code' is a stable machine-readable string clients can switch on. The 'message' is human-readable but English; localize on the client.",
+
+  "_examples": {
+
+    "validation_error_422": {
+      "_when": "POST/PATCH with invalid input. Use 400 if the input is malformed (not parseable). Use 422 if the input is well-formed but semantically invalid.",
+      "_status_code": 422,
+      "error": {
+        "code": "validation_error",
+        "message": "The request contains invalid fields.",
+        "fields": {
+          "email": ["This field is required."],
+          "quantity": ["Must be at least 1."]
+        }
+      }
+    },
+
+    "bad_request_400": {
+      "_when": "Malformed JSON, missing required header, unsupported content type.",
+      "_status_code": 400,
+      "error": {
+        "code": "bad_request",
+        "message": "Request body is not valid JSON."
+      }
+    },
+
+    "unauthenticated_401": {
+      "_when": "No auth credentials provided, or they're invalid/expired.",
+      "_status_code": 401,
+      "error": {
+        "code": "unauthenticated",
+        "message": "Authentication credentials were not provided."
+      }
+    },
+
+    "forbidden_403": {
+      "_when": "Authenticated but not allowed for this resource/action.",
+      "_status_code": 403,
+      "error": {
+        "code": "forbidden",
+        "message": "You do not have permission to perform this action."
+      }
+    },
+
+    "not_found_404": {
+      "_when": "Resource does not exist OR the requester doesn't own it. Always return 404 instead of 403 for ownership mismatches to avoid leaking existence.",
+      "_status_code": 404,
+      "error": {
+        "code": "not_found",
+        "message": "Order not found."
+      }
+    },
+
+    "method_not_allowed_405": {
+      "_when": "Endpoint doesn't support this HTTP method.",
+      "_status_code": 405,
+      "error": {
+        "code": "method_not_allowed",
+        "message": "Method 'PUT' not allowed."
+      }
+    },
+
+    "conflict_409": {
+      "_when": "Request conflicts with current state (duplicate, version mismatch, business rule violation).",
+      "_status_code": 409,
+      "error": {
+        "code": "insufficient_stock",
+        "message": "Product 'ABC-123' has 2 in stock, requested 5.",
+        "details": {
+          "sku": "ABC-123",
+          "available": 2,
+          "requested": 5
+        }
+      }
+    },
+
+    "rate_limited_429": {
+      "_when": "Client exceeded rate limit.",
+      "_status_code": 429,
+      "_response_headers": {
+        "Retry-After": "60"
+      },
+      "error": {
+        "code": "rate_limited",
+        "message": "Too many requests. Retry after 60 seconds.",
+        "retry_after": 60
+      }
+    },
+
+    "server_error_500": {
+      "_when": "Unhandled exception. Never include stack trace or internal details. Always include a request_id so support can trace logs.",
+      "_status_code": 500,
+      "error": {
+        "code": "internal_error",
+        "message": "Something went wrong. Please try again later.",
+        "request_id": "req_01JZXABCDEFGH"
+      }
+    },
+
+    "service_unavailable_503": {
+      "_when": "Dependency (DB, broker, third-party) is down. Use during maintenance or degraded operation.",
+      "_status_code": 503,
+      "_response_headers": {
+        "Retry-After": "120"
+      },
+      "error": {
+        "code": "service_unavailable",
+        "message": "Service is temporarily unavailable. Please try again in a few minutes."
+      }
+    }
+
+  },
+
+  "_principles": [
+    "Always wrap in { error: { ... } } — never bare error fields at top level",
+    "code is stable; clients switch on it",
+    "message is human-readable English; localize on client",
+    "Don't leak internal IDs, stack traces, schema, or query details",
+    "Include request_id on 5xx so support can correlate to logs",
+    "Use Retry-After header for 429 and 503",
+    "Return 404 (not 403) for ownership mismatches to avoid leaking existence"
+  ]
+}

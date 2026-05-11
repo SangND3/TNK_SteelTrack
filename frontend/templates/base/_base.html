@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token }}" />
+  <title>{% block title %}TNK SteelTrack{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/output.css' %}" />
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="h-full bg-gray-50 text-gray-900"
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+      x-data>
+
+  {% include "components/messages.html" %}
+
+  {% block body %}{% endblock %}
+
+  {# HTMX #}
+  <script src="{% static 'js/vendor/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/utils/htmx-helpers.js' %}" defer></script>
+
+  {# Alpine.js #}
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <style>[x-cloak]{display:none!important}</style>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

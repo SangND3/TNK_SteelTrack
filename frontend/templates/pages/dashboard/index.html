@@ -1,0 +1,137 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Dashboard — TNK SteelTrack{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6 animate-fade-in">
+
+  {# ── Greeting ─────────────────────────────────────────────────────────── #}
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <h2 class="text-xl font-bold text-gray-900">
+        Xin chào, {{ request.user.get_full_name|default:request.user.username }} 👋
+      </h2>
+      <p class="text-sm text-gray-500 mt-0.5">
+        Hôm nay là {% now "l, d/m/Y" %} &nbsp;·&nbsp;
+        <span class="{{ request.user.role_badge_css }} inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold">
+          {{ request.user.get_role_display }}
+        </span>
+      </p>
+    </div>
+    {# Quick action based on role #}
+    {% if not request.user.is_viewer_only %}
+    <div class="flex gap-2">
+      <a href="{% url 'inventory:index' %}" class="btn-primary text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nhập kho
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── KPI Cards ─────────────────────────────────────────────────────────── #}
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+    {% include "components/kpi_card.html" with
+       label="Tổng tồn kho"
+       value="—"
+       unit="tấn"
+       icon="cube"
+       color="blue" %}
+
+    {% if not request.user.is_viewer_only %}
+    {% include "components/kpi_card.html" with
+       label="Đơn hàng hôm nay"
+       value="—"
+       unit="đơn"
+       icon="document"
+       color="orange" %}
+    {% endif %}
+
+    {% if request.user.is_manager %}
+    {% include "components/kpi_card.html" with
+       label="Doanh thu tháng"
+       value="—"
+       unit="triệu VNĐ"
+       icon="chart"
+       color="green" %}
+    {% include "components/kpi_card.html" with
+       label="Khách hàng"
+       value="—"
+       unit="KH"
+       icon="users"
+       color="purple" %}
+    {% endif %}
+
+  </div>
+
+  {# ── Access notice for viewer ─────────────────────────────────────────── #}
+  {% if request.user.is_viewer_only %}
+  <div class="alert-info">
+    <svg class="w-5 h-5 flex-shrink-0 text-tnk-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p>
+      Bạn đang đăng nhập với quyền <strong>Xem</strong>. Một số tính năng bị hạn chế.
+      Liên hệ quản trị viên để nâng cấp quyền truy cập.
+    </p>
+  </div>
+  {% endif %}
+
+  {# ── Quick links grid ──────────────────────────────────────────────────── #}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+    <a href="{% url 'inventory:index' %}"
+       class="card p-5 flex items-start gap-4 hover:shadow-md transition-shadow group">
+      <div class="w-10 h-10 rounded-lg bg-tnk-blue-light flex items-center justify-center flex-shrink-0 group-hover:bg-tnk-blue transition-colors">
+        <svg class="w-5 h-5 text-tnk-blue group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-semibold text-gray-800 text-sm">Kho thép</p>
+        <p class="text-xs text-gray-500 mt-0.5">Quản lý hàng tồn kho, nhập xuất</p>
+      </div>
+    </a>
+
+    {% if not request.user.is_viewer_only %}
+    <a href="{% url 'orders:index' %}"
+       class="card p-5 flex items-start gap-4 hover:shadow-md transition-shadow group">
+      <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0 group-hover:bg-tnk-orange transition-colors">
+        <svg class="w-5 h-5 text-tnk-orange group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-semibold text-gray-800 text-sm">Đơn hàng</p>
+        <p class="text-xs text-gray-500 mt-0.5">Tạo và theo dõi đơn hàng</p>
+      </div>
+    </a>
+    {% endif %}
+
+    {% if request.user.is_manager %}
+    <a href="{% url 'reports:index' %}"
+       class="card p-5 flex items-start gap-4 hover:shadow-md transition-shadow group">
+      <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0 group-hover:bg-green-600 transition-colors">
+        <svg class="w-5 h-5 text-green-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-semibold text-gray-800 text-sm">Báo cáo</p>
+        <p class="text-xs text-gray-500 mt-0.5">Thống kê, phân tích dữ liệu</p>
+      </div>
+    </a>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}

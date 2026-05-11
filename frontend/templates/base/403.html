@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>403 — Không có quyền truy cập</title>
+  <link rel="stylesheet" href="{% static 'css/output.css' %}"/>
+</head>
+<body class="h-full bg-gray-50 flex items-center justify-center px-4">
+  <div class="text-center max-w-md">
+    {# TNK mini logo #}
+    <svg viewBox="0 0 60 60" width="60" height="60" class="mx-auto mb-6 opacity-30">
+      <polygon points="30,3  45,18 30,33  15,18" fill="#F5821E"/>
+      <polygon points="15,18 30,33  15,48  0,33"  fill="#B0B4BA"/>
+      <polygon points="45,18 60,33  45,48  30,33" fill="#C8CBCF"/>
+      <polygon points="30,33 45,48  30,63  15,48" fill="#F5A23A" opacity="0.85"/>
+    </svg>
+
+    <p class="text-6xl font-extrabold text-gray-200 select-none">403</p>
+    <h1 class="mt-4 text-xl font-bold text-gray-800">Không có quyền truy cập</h1>
+    <p class="mt-2 text-sm text-gray-500 leading-relaxed">
+      Tài khoản <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+      ({{ request.user.get_role_display }}) không đủ quyền để xem trang này.<br>
+      Liên hệ quản trị viên nếu bạn cần trợ giúp.
+    </p>
+    <div class="mt-8 flex items-center justify-center gap-3">
+      <a href="{% url 'dashboard:index' %}"
+         class="btn-primary">
+        Về Dashboard
+      </a>
+      <a href="javascript:history.back()"
+         class="btn-secondary">
+        Quay lại
+      </a>
+    </div>
+  </div>
+</body>
+</html>

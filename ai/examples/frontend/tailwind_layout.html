@@ -1,0 +1,153 @@
+{#
+  Example base layout with Tailwind + HTMX.
+
+  Reference for:
+  - Semantic HTML structure (header, nav, main, footer)
+  - CSRF + HTMX globally configured via hx-headers on body
+  - hx-boost on body for instant nav (with opt-out per-link)
+  - Skip-to-content link for keyboard users
+  - aria-live regions for toast notifications
+  - Tailwind utility-first; component classes via @apply in input.css
+  - Dark mode via class strategy
+  - Mobile-first responsive
+#}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+
+  <title>{% block title %}{{ site_name|default:"Project" }}{% endblock %}</title>
+
+  {% block meta %}
+    <meta name="description" content="{% block meta_description %}{% endblock %}">
+  {% endblock %}
+
+  <link rel="icon" href="{% static 'images/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/output.css' %}">
+
+  {% block extra_head %}{% endblock %}
+
+  {# Dark mode bootstrap — runs synchronously to prevent flash #}
+  <script>
+    (function () {
+      const stored = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (stored === "dark" || (!stored && prefersDark)) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+  </script>
+</head>
+
+<body
+  class="h-full bg-surface text-gray-900 dark:bg-gray-900 dark:text-gray-100 antialiased"
+  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+  hx-boost="true"
+>
+
+  {# Skip link — visible only on focus #}
+  <a href="#main"
+     class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-primary-700 focus:shadow">
+    Skip to content
+  </a>
+
+  <div class="flex min-h-full flex-col">
+
+    <header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 items-center justify-between">
+
+          <a href="{% url 'home' %}" class="flex items-center gap-2 font-semibold">
+            <img src="{% static 'images/logo.svg' %}" alt="" class="h-8 w-8">
+            <span>{{ site_name|default:"Project" }}</span>
+          </a>
+
+          <nav aria-label="Primary" class="hidden md:flex items-center gap-6">
+            <a href="{% url 'orders:list' %}"
+               class="text-sm font-medium hover:text-primary-600
+                      {% if 'orders' in request.resolver_match.app_names %}text-primary-600{% endif %}">
+              Orders
+            </a>
+            <a href="{% url 'products:list' %}"
+               class="text-sm font-medium hover:text-primary-600">
+              Products
+            </a>
+
+            {% if request.user.is_authenticated %}
+              <div class="relative">
+                <details class="group">
+                  <summary class="cursor-pointer list-none flex items-center gap-2 text-sm">
+                    <span>{{ request.user.first_name|default:request.user.email }}</span>
+                    <span aria-hidden="true">▾</span>
+                  </summary>
+                  <div class="absolute right-0 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                    <a href="{% url 'account:profile' %}"
+                       class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+                      Profile
+                    </a>
+                    <form action="{% url 'account:logout' %}" method="post" hx-boost="false">
+                      {% csrf_token %}
+                      <button type="submit"
+                              class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+                        Log out
+                      </button>
+                    </form>
+                  </div>
+                </details>
+              </div>
+            {% else %}
+              <a href="{% url 'account:login' %}" class="btn-secondary btn-sm">Log in</a>
+            {% endif %}
+          </nav>
+
+        </div>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1" class="flex-1">
+      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {% if messages %}
+          <div class="mb-6 space-y-2" aria-live="polite">
+            {% for message in messages %}
+              <div class="rounded-md p-3 text-sm
+                          {% if message.tags == 'success' %}bg-green-50 text-green-800
+                          {% elif message.tags == 'error' %}bg-red-50 text-red-800
+                          {% else %}bg-blue-50 text-blue-800{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <footer class="border-t border-gray-200 dark:border-gray-800 mt-auto">
+      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 text-sm text-gray-500">
+        © {% now "Y" %} {{ site_name|default:"Project" }}
+      </div>
+    </footer>
+
+  </div>
+
+  {# Modal slot — HTMX swaps modal content here #}
+  <div id="modal-slot"></div>
+
+  {# Toast region — listens for HX-Trigger "showToast" events #}
+  <div
+    id="toast-region"
+    class="fixed bottom-4 right-4 space-y-2 pointer-events-none z-50"
+    aria-live="polite"
+    aria-atomic="false"
+  ></div>
+
+  <script defer src="{% static 'js/vendor/htmx.min.js' %}"></script>
+  <script defer src="{% static 'js/app.js' %}"></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

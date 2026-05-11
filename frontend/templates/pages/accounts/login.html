@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập — TNK SteelTrack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/output.css' %}" />
+</head>
+
+<body class="h-full bg-gray-100 flex items-stretch"
+      x-data>
+
+  {# ═══ LEFT PANEL — TNK Branding ════════════════════════════════════════ #}
+  <div class="hidden lg:flex lg:w-[480px] xl:w-[520px] flex-shrink-0 flex-col
+              bg-tnk-blue steel-mesh relative overflow-hidden">
+
+    {# Decorative circles #}
+    <div class="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-white/5"></div>
+    <div class="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-white/5"></div>
+    <div class="absolute top-1/2 -right-16 w-48 h-48 rounded-full bg-tnk-orange/10"></div>
+
+    {# Content block — centered vertically #}
+    <div class="relative flex flex-col items-center justify-center flex-1 px-12 py-16 text-center">
+
+      {# TNK Diamond Logo — SVG recreation #}
+      <div class="mb-8 drop-shadow-xl">
+        <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+          {# Top diamond — orange #}
+          <polygon points="60,4  92,36  60,68  28,36"  fill="#F5821E"/>
+          {# Left diamond — silver #}
+          <polygon points="28,36 60,68  28,100  -4,68"  fill="#B0B4BA"/>
+          {# Right diamond — silver #}
+          <polygon points="92,36 124,68  92,100  60,68" fill="#C8CBCF"/>
+          {# Bottom diamond — light orange / accent #}
+          <polygon points="60,68 92,100  60,132  28,100" fill="#F5A23A" opacity="0.85"/>
+        </svg>
+      </div>
+
+      {# Company name #}
+      <h1 class="text-4xl font-extrabold text-white tracking-wide leading-tight">
+        TÔN NAM KIM
+      </h1>
+      <p class="mt-1 text-tnk-orange font-semibold tracking-widest text-sm uppercase">
+        Thương hiệu quốc gia
+      </p>
+
+      {# Divider #}
+      <div class="my-8 w-16 h-px bg-white/20"></div>
+
+      {# System description #}
+      <h2 class="text-2xl font-bold text-white leading-snug">
+        SteelTrack
+      </h2>
+      <p class="mt-3 text-blue-200 text-sm leading-relaxed max-w-xs">
+        Hệ thống quản lý kho thép — đơn hàng — báo cáo<br>
+        chuyên nghiệp cho ngành tôn mạ.
+      </p>
+
+      {# Feature pills #}
+      <div class="mt-10 flex flex-wrap justify-center gap-2">
+        {% for feat in features %}
+        <span class="px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-medium">
+          {{ feat }}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Footer #}
+    <div class="relative px-12 py-5 border-t border-white/10 text-center">
+      <p class="text-blue-300 text-xs">
+        © {% now "Y" %} Công ty TNHH Tôn Nam Kim. All rights reserved.
+      </p>
+    </div>
+  </div>
+
+  {# ═══ RIGHT PANEL — Login Form ═══════════════════════════════════════════ #}
+  <div class="flex-1 flex flex-col items-center justify-center px-6 py-12 bg-gray-50">
+
+    {# Mobile logo (shown only on small screens) #}
+    <div class="lg:hidden flex flex-col items-center mb-8">
+      <svg viewBox="0 0 80 80" width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="40,3  62,25  40,47  18,25" fill="#F5821E"/>
+        <polygon points="18,25 40,47  18,69  -4,47"  fill="#B0B4BA"/>
+        <polygon points="62,25 84,47  62,69  40,47" fill="#C8CBCF"/>
+        <polygon points="40,47 62,69  40,91  18,69" fill="#F5A23A" opacity="0.85"/>
+      </svg>
+      <h1 class="mt-3 text-2xl font-extrabold text-tnk-blue tracking-wide">TÔN NAM KIM</h1>
+      <p class="text-tnk-orange text-xs font-semibold tracking-widest uppercase">SteelTrack</p>
+    </div>
+
+    {# Login card #}
+    <div class="w-full max-w-md animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+
+        {# Card header #}
+        <div class="px-8 pt-8 pb-6 border-b border-gray-100">
+          <h2 class="text-2xl font-bold text-gray-900">Đăng nhập</h2>
+          <p class="mt-1 text-sm text-gray-500">
+            Chào mừng bạn trở lại hệ thống <span class="font-medium text-tnk-blue">SteelTrack</span>
+          </p>
+        </div>
+
+        {# Form #}
+        <form method="post" class="px-8 py-7 space-y-5" novalidate>
+          {% csrf_token %}
+
+          {# Non-field errors #}
+          {% if form.non_field_errors %}
+          <div class="alert-error animate-fade-in" role="alert">
+            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span>{{ form.non_field_errors.0 }}</span>
+          </div>
+          {% endif %}
+
+          {# Username field #}
+          <div>
+            <label for="{{ form.username.id_for_label }}" class="label">
+              Tên đăng nhập
+            </label>
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+              </div>
+              <input type="text"
+                     id="{{ form.username.id_for_label }}"
+                     name="username"
+                     value="{{ form.username.value|default:'' }}"
+                     autocomplete="username"
+                     autofocus
+                     placeholder="Tên đăng nhập"
+                     class="input pl-10 {% if form.username.errors %}input-error{% endif %}"
+                     required />
+            </div>
+            {% if form.username.errors %}
+            <p class="field-error">{{ form.username.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          {# Password field with show/hide toggle #}
+          <div x-data="{ show: false }">
+            <label for="{{ form.password.id_for_label }}" class="label">
+              Mật khẩu
+            </label>
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+              </div>
+              <input :type="show ? 'text' : 'password'"
+                     id="{{ form.password.id_for_label }}"
+                     name="password"
+                     autocomplete="current-password"
+                     placeholder="••••••••"
+                     class="input pl-10 pr-10 {% if form.password.errors %}input-error{% endif %}"
+                     required />
+              <button type="button"
+                      @click="show = !show"
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                      :aria-label="show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'">
+                {# Eye icon — toggle via Alpine #}
+                <svg x-show="!show" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <svg x-show="show" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                </svg>
+              </button>
+            </div>
+            {% if form.password.errors %}
+            <p class="field-error">{{ form.password.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          {# Remember me #}
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox"
+                     id="{{ form.remember_me.id_for_label }}"
+                     name="remember_me"
+                     class="h-4 w-4 rounded border-gray-300 text-tnk-blue focus:ring-tnk-blue/30"
+                     {% if form.remember_me.value %}checked{% endif %} />
+              <span class="text-sm text-gray-600">Ghi nhớ đăng nhập</span>
+            </label>
+            {# Placeholder for future password reset #}
+            <span class="text-sm text-gray-400 cursor-not-allowed" title="Tính năng sắp có">
+              Quên mật khẩu?
+            </span>
+          </div>
+
+          {# Submit #}
+          <button type="submit"
+                  class="w-full btn-orange py-2.5 text-base font-semibold tracking-wide">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+            </svg>
+            Đăng nhập
+          </button>
+        </form>
+
+        {# Card footer — Role legend #}
+        <div class="px-8 pb-7">
+          <div class="border-t border-gray-100 pt-5">
+            <p class="text-xs text-gray-400 mb-3 font-medium uppercase tracking-wide">Cấp độ truy cập</p>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center gap-2">
+                <span class="badge-admin">Quản trị viên</span>
+                <span class="text-xs text-gray-400">Toàn quyền</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge-manager">Quản lý</span>
+                <span class="text-xs text-gray-400">Quản lý dữ liệu</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge-staff">Nhân viên</span>
+                <span class="text-xs text-gray-400">Nhập liệu</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge-viewer">Xem</span>
+                <span class="text-xs text-gray-400">Chỉ xem</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>{# /card #}
+
+      {# Below-card footer #}
+      <p class="mt-6 text-center text-xs text-gray-400">
+        SteelTrack v1.0 &nbsp;·&nbsp; Tôn Nam Kim &nbsp;·&nbsp;
+        Cần hỗ trợ? <a href="mailto:it@tonnamkim.vn" class="text-tnk-blue hover:underline">it@tonnamkim.vn</a>
+      </p>
+    </div>
+
+  </div>{# /right panel #}
+
+  {# Alpine.js #}
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  {# x-cloak fix #}
+  <style>[x-cloak]{display:none!important}</style>
+
+</body>
+</html>

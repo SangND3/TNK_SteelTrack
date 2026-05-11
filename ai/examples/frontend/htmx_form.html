@@ -1,0 +1,96 @@
+{# 
+  Example HTMX form: create order with inline validation.
+  
+  Reference for:
+  - hx-post + hx-target + hx-swap (explicit)
+  - Form errors rendered server-side, swap back in place
+  - Loading indicator via hx-indicator + hx-disabled-elt
+  - Accessibility: labels, aria-invalid, aria-describedby, role="alert"
+  
+  Usage:
+    Server returns this partial as the initial render AND as the
+    re-render when validation fails. Server returns a different
+    partial (e.g., order_row.html) on success.
+#}
+
+<form
+  id="order-form"
+  hx-post="{% url 'orders:create' %}"
+  hx-target="this"
+  hx-swap="outerHTML"
+  hx-disabled-elt="find button[type=submit]"
+  class="space-y-4"
+>
+  {# Non-field errors (e.g., InsufficientStockError raised by service) #}
+  {% if form.non_field_errors %}
+    <div role="alert" class="rounded-md bg-red-50 p-3 text-sm text-red-700">
+      {{ form.non_field_errors|first }}
+    </div>
+  {% endif %}
+
+  <div>
+    <label for="id_title" class="block text-sm font-medium text-gray-700">
+      Title
+      <span class="text-red-600" aria-hidden="true">*</span>
+    </label>
+    <input
+      type="text"
+      name="title"
+      id="id_title"
+      value="{{ form.title.value|default:'' }}"
+      required
+      maxlength="200"
+      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+      {% if form.title.errors %}
+        aria-invalid="true"
+        aria-describedby="title-error"
+      {% endif %}
+    >
+    {% if form.title.errors %}
+      <p id="title-error" role="alert" class="mt-1 text-sm text-red-600">
+        {{ form.title.errors|first }}
+      </p>
+    {% endif %}
+  </div>
+
+  <div>
+    <label for="id_quantity" class="block text-sm font-medium text-gray-700">
+      Quantity
+    </label>
+    <input
+      type="number"
+      name="quantity"
+      id="id_quantity"
+      value="{{ form.quantity.value|default:1 }}"
+      min="1"
+      max="1000"
+      class="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+      {% if form.quantity.errors %}
+        aria-invalid="true"
+        aria-describedby="quantity-error"
+      {% endif %}
+    >
+    {% if form.quantity.errors %}
+      <p id="quantity-error" role="alert" class="mt-1 text-sm text-red-600">
+        {{ form.quantity.errors|first }}
+      </p>
+    {% endif %}
+  </div>
+
+  <div class="flex items-center gap-3">
+    <button type="submit" class="btn-primary">
+      <span>Create order</span>
+      <span class="htmx-indicator ml-2" aria-hidden="true">…</span>
+    </button>
+
+    <button
+      type="button"
+      hx-get="{% url 'orders:list' %}"
+      hx-target="#order-form"
+      hx-swap="outerHTML"
+      class="btn-secondary"
+    >
+      Cancel
+    </button>
+  </div>
+</form>

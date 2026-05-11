@@ -1,0 +1,77 @@
+{#
+  Example modal component using native <dialog>.
+
+  Reference for:
+  - Native <dialog> (no JS framework, browser handles focus trap + Esc)
+  - Loaded via HTMX into a placeholder, opens on swap
+  - Cancel closes with form method="dialog"
+  - Submit triggers a separate HTMX action and closes
+  - Backdrop click closes (via ::backdrop styling)
+  - Focus moves to first focusable element on open
+
+  Usage from a trigger button:
+
+    <div id="modal-slot"></div>
+
+    <button
+      hx-get="{% url 'orders:delete_confirm' order.public_id %}"
+      hx-target="#modal-slot"
+      hx-swap="innerHTML"
+    >Delete</button>
+
+  The view returns this template; HTMX swaps it into #modal-slot;
+  the hx-on::after-swap handler calls showModal().
+#}
+
+<dialog
+  id="confirm-modal"
+  class="rounded-lg p-0 backdrop:bg-black/40 max-w-md w-full"
+  aria-labelledby="modal-title"
+  aria-describedby="modal-body"
+  hx-on::after-swap="this.showModal(); this.querySelector('button[autofocus]').focus()"
+>
+  <div class="p-6">
+    <h2 id="modal-title" class="text-lg font-semibold text-gray-900">
+      {{ title|default:"Confirm action" }}
+    </h2>
+
+    <div id="modal-body" class="mt-3 text-sm text-gray-600">
+      {{ body|default:"Are you sure?" }}
+    </div>
+
+    <div class="mt-6 flex justify-end gap-3">
+      {# Cancel: native <dialog> method="dialog" closes without submitting #}
+      <form method="dialog">
+        <button type="submit" autofocus class="btn-secondary">
+          Cancel
+        </button>
+      </form>
+
+      {# Confirm: triggers the actual action, closes after success #}
+      <button
+        type="button"
+        hx-post="{{ action_url }}"
+        hx-target="{{ result_target|default:'body' }}"
+        hx-swap="{{ result_swap|default:'none' }}"
+        hx-on::after-request="document.getElementById('confirm-modal').close()"
+        class="btn-{{ variant|default:'danger' }}"
+      >
+        {{ confirm_label|default:"Confirm" }}
+      </button>
+    </div>
+  </div>
+</dialog>
+
+{#
+  Server returns this with context:
+
+    return render(request, "components/confirm_modal.html", {
+        "title": "Delete order?",
+        "body": f"This will permanently delete '{order.title}'.",
+        "action_url": reverse("orders:delete", args=[order.public_id]),
+        "confirm_label": "Delete",
+        "variant": "danger",
+        "result_target": f"#order-{order.public_id}",
+        "result_swap": "outerHTML swap:200ms",
+    })
+#}
