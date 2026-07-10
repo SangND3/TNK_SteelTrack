@@ -5,18 +5,22 @@ class LoginForm(forms.Form):
     username = forms.CharField(
         max_length=150,
         label="Tên đăng nhập",
-        widget=forms.TextInput(attrs={
-            "autocomplete": "username",
-            "autofocus": True,
-            "placeholder": "Tên đăng nhập",
-        }),
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "username",
+                "autofocus": True,
+                "placeholder": "Tên đăng nhập",
+            }
+        ),
     )
     password = forms.CharField(
         label="Mật khẩu",
-        widget=forms.PasswordInput(attrs={
-            "autocomplete": "current-password",
-            "placeholder": "••••••••",
-        }),
+        widget=forms.PasswordInput(
+            attrs={
+                "autocomplete": "current-password",
+                "placeholder": "••••••••",
+            }
+        ),
     )
     remember_me = forms.BooleanField(
         required=False,

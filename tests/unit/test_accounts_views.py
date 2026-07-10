@@ -28,6 +28,25 @@ class TestLoginView:
         )
         assert response.status_code == 302
 
+    def test_login_honors_safe_next_url(self, client: Client, django_user_model):
+        django_user_model.objects.create_user(username="u_next", password="StrongPass@1")
+        response = client.post(
+            reverse("accounts:login") + "?next=/inventory/",
+            {"username": "u_next", "password": "StrongPass@1"},
+        )
+        assert response.status_code == 302
+        assert response["Location"] == "/inventory/"
+
+    def test_login_rejects_open_redirect(self, client: Client, django_user_model):
+        django_user_model.objects.create_user(username="u_evil", password="StrongPass@1")
+        response = client.post(
+            reverse("accounts:login") + "?next=https://evil.com/phish",
+            {"username": "u_evil", "password": "StrongPass@1"},
+        )
+        assert response.status_code == 302
+        assert "evil.com" not in response["Location"]
+        assert "dashboard" in response["Location"]
+
     def test_invalid_password_shows_error(self, client: Client, django_user_model):
         django_user_model.objects.create_user(username="u3", password="correct")
         response = client.post(

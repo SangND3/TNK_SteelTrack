@@ -3,6 +3,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 
 from apps.core.exceptions import ApplicationError
@@ -18,29 +19,39 @@ def login_view(request: HttpRequest) -> HttpResponse:
 
     form = LoginForm(request.POST or None)
 
-    if request.method == "POST":
-        if form.is_valid():
-            try:
-                user = login_authenticate(
-                    username=form.cleaned_data["username"],
-                    password=form.cleaned_data["password"],
-                )
-            except ApplicationError as exc:
-                form.add_error(None, str(exc))
+    if request.method == "POST" and form.is_valid():
+        try:
+            user = login_authenticate(
+                username=form.cleaned_data["username"],
+                password=form.cleaned_data["password"],
+            )
+        except ApplicationError as exc:
+            form.add_error(None, str(exc))
+        else:
+            login(request, user)
+            # Session expiry: 2 weeks if "remember me", else browser session
+            if not form.cleaned_data.get("remember_me"):
+                request.session.set_expiry(0)
             else:
-                login(request, user)
-                # Session expiry: 2 weeks if "remember me", else browser session
-                if not form.cleaned_data.get("remember_me"):
-                    request.session.set_expiry(0)
-                else:
-                    request.session.set_expiry(60 * 60 * 24 * 14)
+                request.session.set_expiry(60 * 60 * 24 * 14)
 
-                next_url = request.GET.get("next", "dashboard:index")
+            next_url = request.GET.get("next", "")
+            if next_url and url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            ):
                 return redirect(next_url)
+            return redirect("dashboard:index")
 
     ctx = {
         "form": form,
-        "features": ["Quản lý tồn kho", "Theo dõi đơn hàng", "Báo cáo thống kê", "Phân quyền vai trò"],
+        "features": [
+            "Quản lý tồn kho",
+            "Theo dõi đơn hàng",
+            "Báo cáo thống kê",
+            "Phân quyền vai trò",
+        ],
     }
     return render(request, "pages/accounts/login.html", ctx)
 

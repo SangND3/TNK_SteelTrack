@@ -7,7 +7,7 @@ class ApplicationError(Exception):
         self.extra = extra or {}
 
 
-class PermissionDenied(ApplicationError):
+class AuthorizationError(ApplicationError):
     pass
 
 
@@ -15,5 +15,5 @@ class ValidationError(ApplicationError):
     pass
 
 
-class NotFound(ApplicationError):
+class NotFoundError(ApplicationError):
     pass
