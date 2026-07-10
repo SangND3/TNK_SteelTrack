@@ -1,5 +1,6 @@
 from decouple import Csv, config
 
+# Star-import is the intended settings-layering pattern: production overrides base.
 from .base import *  # noqa: F401, F403
 
 DEBUG = False
@@ -16,11 +17,11 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# Sentry
+# Sentry — imported here (after settings) so it only loads in production.
 import sentry_sdk  # noqa: E402
-from sentry_sdk.integrations.celery import CeleryIntegration
-from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.redis import RedisIntegration
+from sentry_sdk.integrations.celery import CeleryIntegration  # noqa: E402
+from sentry_sdk.integrations.django import DjangoIntegration  # noqa: E402
+from sentry_sdk.integrations.redis import RedisIntegration  # noqa: E402
 
 sentry_sdk.init(
     dsn=config("SENTRY_DSN", default=""),

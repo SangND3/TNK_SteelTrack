@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -16,6 +16,7 @@ def role_required(*roles: str) -> Callable:
 
     Superusers bypass the role check.
     """
+
     def decorator(view_func: Callable) -> Callable:
         @login_required
         @wraps(view_func)
@@ -23,7 +24,9 @@ def role_required(*roles: str) -> Callable:
             if request.user.is_superuser or request.user.role in roles:
                 return view_func(request, *args, **kwargs)
             raise PermissionDenied
+
         return wrapper
+
     return decorator
 
 

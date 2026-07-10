@@ -11,6 +11,8 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ("username", "first_name", "last_name", "email")
     ordering = ("-date_joined",)
 
+    # django-stubs types fieldsets as _FieldsetSpec (list); concatenating a tuple
+    # is valid at runtime but the stub's __add__ overload doesn't cover it.
     fieldsets = BaseUserAdmin.fieldsets + (  # type: ignore[operator]
         ("Thông tin hệ thống", {"fields": ("role", "phone", "avatar")}),
     )
